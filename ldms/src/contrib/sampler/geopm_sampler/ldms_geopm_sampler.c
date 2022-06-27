@@ -58,6 +58,7 @@
 
 #include "ldms_geopm_sampler.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -150,6 +151,7 @@ void ldms_geopm_sampler_set_log(void (*pf)(int, const char *fms, ...))
 int ldms_geopm_sampler_open_config(const char *config_path, FILE **result)
 {
 	int rc = 0;
+	errno = 0;
 	*result = fopen(config_path, "r");
 	if (*result == NULL) {
 		msglog(LDMSD_LERROR,
@@ -175,14 +177,12 @@ int ldms_geopm_sampler_parse_line(FILE *fid,
 	int format_size = snprintf(format, sizeof(format),
 				   "%%%ds %%%ds %%d %%%ds ",
 				   NAME_MAX - 1, NAME_MAX - 1, NAME_MAX - 1);
-	if (format_size >= NAME_MAX) {
-		return ENAMETOOLONG;
-	}
-
+	assert(format_size < NAME_MAX);
 	char domain_type_str[NAME_MAX];
 	char *line = NULL;
 	size_t line_len = 0;
 	int num_scan = 0;
+	errno = 0;
 	while (num_scan == 0) {
 		if (getline(&line, &line_len, fid) == -1) {
 			if (errno) {
@@ -215,7 +215,16 @@ int ldms_geopm_sampler_parse_line(FILE *fid,
 	if (num_scan == EOF) {
 		return EOF;
 	}
+	else if (num_scan == ENOMEM) {
+		msglog(LDMSD_LERROR,
+		       SAMP": %s:%d: Unable to allocate memory while parsing GEOPM Sampler configuration file\n",
+		       __FILE__, __LINE__);
+		return ENOMEM;
+	}
 	else if (num_scan != 3) {
+		msglog(LDMSD_LERROR,
+		       SAMP": %s:%d: File format error for GEOPM Sampler configuration file\n",
+		       __FILE__, __LINE__);
 		return EINVAL;
 	}
 	*domain_type = geopm_topo_domain_type(domain_type_str);
@@ -261,7 +270,7 @@ int ldms_geopm_sampler_parse_check(int parse_rc)
 {
 	if (parse_rc != EOF) {
 		msglog(LDMSD_LERROR,
-		       SAMP": %s:%d: File format error for GEOPM Sampler configuration file\n",
+		       SAMP": %s:%d: Unable to parse GEOPM Sampler configuration file\n",
 		       __FILE__, __LINE__);
 		return parse_rc;
 	}
