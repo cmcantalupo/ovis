@@ -254,6 +254,7 @@ int ldms_geopm_sampler_parse_line(FILE *fid,
 
 	}
 	*metric_type = format_type;
+        errno = 0;
 	int print_rc = snprintf(metric_name, NAME_MAX, "%s-%s-%d",
 				signal_name, domain_type_str, *domain_idx);
 	if (print_rc >= NAME_MAX || print_rc < 0) {
@@ -361,6 +362,7 @@ static int create_metric_set(void)
 	enum geopm_domain_e domain_type = GEOPM_DOMAIN_INVALID;
 	FILE *signal_fileptr = NULL;
 
+        errno = 0;
 	schema = base_schema_new(g_base);
 	if (schema == NULL) {
 		msglog(LDMSD_LERROR,
@@ -397,6 +399,7 @@ static int create_metric_set(void)
 		if (rc != 0) {
 			goto exit;
 		}
+                errno = 0;
 		rc = ldms_schema_metric_add(schema, metric_name,
 					    ldms_geopm_sampler_value_type(metric_type));
 		if (rc < 0) {
@@ -411,6 +414,7 @@ static int create_metric_set(void)
 	if (rc != 0) {
 		goto exit;
 	}
+        errno = 0;
 	g_set = base_set_new(g_base);
 	if (g_set == NULL) {
 		rc = errno ? errno : -1;
@@ -477,6 +481,7 @@ static int config(struct ldmsd_plugin *self, struct attr_value_list *kwl, struct
 	/* Configure sampler base
 	 * This makes call into core LDMS functions for initializing the sampler
 	 */
+        errno = 0;
 	g_base = base_config(avl, SAMP, SAMP, msglog);
 	msglog(LDMSD_LDEBUG, SAMP": Base config() called.\n");
 	if (g_base == NULL) {
