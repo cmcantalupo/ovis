@@ -3,11 +3,12 @@ TEST_CONF=${TEST_DIR}/${TEST_NAME}.conf
 TEST_LOG_OUT=${TEST_DIR}/${TEST_NAME}.out
 TEST_LOG_ERR=${TEST_DIR}/${TEST_NAME}.err
 TEST_LOG_EXPECT=${TEST_DIR}/${TEST_NAME}.expect
-TEST_BIN=${TEST_DIR}/ldms_geopm_sampler_test
+TEST_BIN=${TEST_DIR}/.libs/ldms_geopm_sampler_test
 
 
 ldms_geopm_sampler_test_run()
 {
+    LD_LIBRARY_PATH=${TEST_DIR}/.libs:../../../../../ldms/src/sampler/.libs:../../../../../ldms/src/core/.libs:../../../../../lib/src/ovis_json/.libs:../../../../../lib/src/ovis_ev/.libs:../../../../../lib/src/mmalloc/.libs:../../../../../lib/src/zap/.libs:../../../../../lib/src/coll/.libs:../../../../../lib/src/third/.libs:../../../../../lib/src/ovis_util/.libs:${LD_LIBRARY_PATH} \
     ${TEST_WRAPPER} ${TEST_BIN} ${TEST_CONF} \
         1> ${TEST_LOG_OUT} \
         2> ${TEST_LOG_ERR}
